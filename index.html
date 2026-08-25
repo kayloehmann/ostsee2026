@@ -49,6 +49,16 @@
           <h3 class="font-semibold text-slate-800 mt-1">⛸️ Eishalle Timmendorf</h3>
           <p class="text-sm text-slate-500 mt-1">Eissport- und Tenniscentrum (ETC) — Eislaufhalle für alle Wetterlagen, ideal für Familien und Sportbegeisterte.</p>
         </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p class="text-xs font-medium text-rose-600 tracking-wide">RESTAURANT / KULINARIK</p>
+          <h3 class="font-semibold text-slate-800 mt-1">🍽️ Restaurant Wolkenlos</h3>
+          <p class="text-sm text-slate-500 mt-1">Feines Abendessen mit regionalen Spezialitäten und Meerblick.</p>
+        </div>
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p class="text-xs font-medium text-amber-600 tracking-wide">SNACK / GENUSS</p>
+          <h3 class="font-semibold text-slate-800 mt-1">🍦 Softeis auf dem Weg zurück</h3>
+          <p class="text-sm text-slate-500 mt-1">Erfrischendes Softeis als Abschluss eines schönen Tages.</p>
+        </div>
       </div>
     </section>
   </main>
@@ -70,7 +80,9 @@
     const spots = [
       { name: 'Timmendorfer Strand', lat: 54.1206, lng: 10.7727 },
       { name: 'Niendorfer Bucht', lat: 54.1130, lng: 10.7540 },
-      { name: 'Eishalle Timmendorf (ETC)', lat: 54.0006, lng: 10.7746 },
+      { name: 'Eishalle Timmendorf (ETC)', lat: 54.1180, lng: 10.7650 },
+      { name: 'Restaurant Wolkenlos', lat: 54.1215, lng: 10.7750 },
+      { name: 'Softeis (Eiscafé Tonegutti)', lat: 54.1200, lng: 10.7730 },
     ];
     const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));
     if (markers.length) {
