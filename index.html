@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#082f49" />
+  <title>Ostsee 2026 — Timmendorfer Strand</title>
+  <link rel="preconnect" href="https://rsms.me/" />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { display: ['Inter var', 'Inter', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
+  <style>
+    #map { height: 380px; }
+    @media (min-width: 640px) { #map { height: 480px; } }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen font-display">
+  <header class="bg-gradient-to-br from-sky-900 via-sky-950 to-slate-900 text-white">
+    <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+      <p class="text-sky-300 text-xs sm:text-sm font-medium tracking-wide">🌊 OSTSEE-URLAUB</p>
+      <h1 class="text-2xl sm:text-4xl font-bold mt-1">Ostsee 2026 — Timmendorfer Strand</h1>
+      <p class="text-sky-100 text-sm sm:text-base mt-2">19.–27. August 2026 · Kay &amp; Manu</p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 py-8 sm:py-12 space-y-10">
+    <section>
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-3">🗺️ Karte</h2>
+      <div id="map" class="rounded-xl overflow-hidden shadow-sm border border-slate-200"></div>
+    </section>
+
+    <section>
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-3">✨ Highlights</h2>
+      <div id="highlights" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Inhalte folgen -->
+        <div class="rounded-xl border border-dashed border-slate-300 bg-white/60 p-5 text-slate-400 text-sm">
+          Noch keine Highlights eingetragen — folgt.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-200 mt-12">
+    <div class="max-w-5xl mx-auto px-4 py-6 text-xs sm:text-sm text-slate-500 flex flex-wrap gap-x-4 gap-y-1 justify-between">
+      <span>© Kay Löhmann</span>
+      <a href="https://island2026.kayloehmann.de" class="hover:text-slate-700 underline-offset-2 hover:underline">Referenz: island2026.kayloehmann.de ↗</a>
+    </div>
+  </footer>
+
+  <script>
+    const map = L.map('map', { scrollWheelZoom: false }).setView([54.1180, 10.7650], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+
+    const spots = [
+      { name: 'Timmendorfer Strand', lat: 54.1206, lng: 10.7727 },
+      { name: 'Niendorfer Bucht', lat: 54.1130, lng: 10.7540 },
+    ];
+    const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));
+    if (markers.length) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.3));
+    }
+  </script>
+</body>
+</html>
