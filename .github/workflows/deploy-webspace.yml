@@ -1,0 +1,90 @@
+name: Deploy zum Webspace (kayloehmann.de)
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-webspace
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SSH-Setup
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync zum Webspace
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DEPLOY_PATH"
+          rsync -avz --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude 'CNAME' \
+            --exclude 'README.md' \
+            --exclude '.gitignore' \
+            --exclude '.DS_Store' \
+            --rsh "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            ./ \
+            "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH"
+
+      - name: Eltern-.htaccess für Subdomain-Mapping
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          # ISPConfig: ostsee2026.kayloehmann.de ist ServerAlias der Hauptdomain
+          # (kein eigener VHost-DocRoot) -- gleiches Muster wie island2026.
+          # Wir schreiben mod_rewrite ins Apache-Webroot, damit die Subdomain
+          # ohne Pfad-Präfix direkt auf /ostsee2026/ geserved wird. Wichtig:
+          # absoluter Pfad, weil ~ = /private (HOME) und NICHT der Apache-Webroot.
+          ssh -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" 'bash -s' <<'BASH'
+          set -e
+          WEBROOT=/var/www/clients/client28/web67/web
+          HT="$WEBROOT/.htaccess"
+          BLOCK="$WEBROOT/.htaccess.ostsee2026.new"
+
+          cat > "$BLOCK" <<'RULES'
+          # >>> ostsee2026.kayloehmann.de -> /ostsee2026/  (auto-managed by deploy-webspace.yml)
+          <IfModule mod_rewrite.c>
+              RewriteEngine On
+              RewriteCond %{HTTP_HOST} ^ostsee2026\.kayloehmann\.de$ [NC]
+              RewriteCond %{REQUEST_URI} !^/ostsee2026/ [NC]
+              RewriteRule ^(.*)$ /ostsee2026/$1 [L]
+          </IfModule>
+          # <<< ostsee2026.kayloehmann.de
+          RULES
+
+          touch "$HT"
+          if grep -q ">>> ostsee2026.kayloehmann.de" "$HT"; then
+            sed -i '/>>> ostsee2026.kayloehmann.de/,/<<< ostsee2026.kayloehmann.de/d' "$HT"
+          fi
+          cat "$BLOCK" >> "$HT"
+          rm -f "$BLOCK"
+          echo "=== $HT (final) ==="
+          cat "$HT"
+          BASH
+
+      - name: Smoke-Test der Live-URL
+        env:
+          DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+        run: |
+          sleep 2
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL/")
+          echo "Live-URL: $DEPLOY_URL → HTTP $code"
+          [ "$code" = "200" ] && echo "✅ OK" || echo "::warning::Live-URL antwortet mit $code, nicht 200"
