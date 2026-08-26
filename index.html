@@ -78,11 +78,11 @@
     }).addTo(map);
 
     const spots = [
-      { name: 'Timmendorfer Strand', lat: 54.1206, lng: 10.7727 },
-      { name: 'Niendorfer Bucht', lat: 54.1130, lng: 10.7540 },
-      { name: 'Eishalle Timmendorf (ETC)', lat: 54.1180, lng: 10.7650 },
-      { name: 'Restaurant Wolkenlos', lat: 54.1215, lng: 10.7750 },
-      { name: 'Softeis (Eiscafé Tonegutti)', lat: 54.1200, lng: 10.7730 },
+      { name: 'Timmendorfer Strand', lat: 53.999665, lng: 10.773960 },
+      { name: 'Niendorfer Bucht', lat: 53.993375, lng: 10.823776 },
+      { name: 'Eishalle Timmendorf (ETC)', lat: 54.0006, lng: 10.7746 },
+      { name: 'Restaurant Wolkenlos', lat: 53.995751, lng: 10.793629 },
+      { name: 'Softeis (Eiscafé Tonegutti)', lat: 53.999665, lng: 10.773960 },
     ];
     const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));
     if (markers.length) {
