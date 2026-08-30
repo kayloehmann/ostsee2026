@@ -39,6 +39,7 @@
     <section>
       <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-3">🗺️ Karte</h2>
       <div id="map" class="rounded-xl overflow-hidden shadow-sm border border-slate-200"></div>
+      <div id="places" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4"></div>
     </section>
 
     <section>
@@ -88,21 +89,32 @@
     }).addTo(map);
 
     const spots = [
-      { name: 'Timmendorfer Strand', lat: 53.999665, lng: 10.773960 },
-      { name: 'Niendorfer Bucht', lat: 53.993375, lng: 10.823776 },
-      { name: 'Eishalle Timmendorf (ETC)', lat: 54.0006, lng: 10.7746 },
-      { name: 'Restaurant Wolkenlos', lat: 53.995751, lng: 10.793629 },
-      { name: 'Softeis (Eiscafé Tonegutti)', lat: 53.999665, lng: 10.773960 },
-      { name: 'Adventure Golf Sierksdorf', lat: 54.072747, lng: 10.785677 },
-      { name: "MEET'n move Bowling", lat: 54.072419, lng: 10.781661 },
-      { name: 'Ferienhaus / Unterkunft', lat: 53.99749298663205, lng: 10.76833728094691 },
-      { name: 'Alt-Travemünde (Vorderreihe)', lat: 53.9566035, lng: 10.8687975 },
-      { name: 'Wochenmarkt Lübeck', lat: 53.86659, lng: 10.68491 },
-      { name: 'Turm der St. Petri Kirche (Lübeck)', lat: 53.8659379, lng: 10.6829632 },
-      { name: 'Museum Holstentor (Lübeck)', lat: 53.8661407, lng: 10.6796886 },
-      { name: 'Boat-Now Lübeck', lat: 53.8636774, lng: 10.6805615 },
+      { name: 'Timmendorfer Strand', lat: 53.999665, lng: 10.773960, description: 'Zentraler Strandabschnitt und Promenade von Timmendorfer Strand.' },
+      { name: 'Niendorfer Bucht', lat: 53.993375, lng: 10.823776, description: 'Ostseebucht beim Ortsteil Niendorf mit Strand und Küstenpromenade.' },
+      { name: 'Eishalle Timmendorf (ETC)', lat: 54.0006, lng: 10.7746, description: 'Eissport- und Tenniscentrum in Timmendorfer Strand.' },
+      { name: 'Restaurant Wolkenlos', lat: 53.995751, lng: 10.793629, description: 'Restaurant auf der Seeschlösschenbrücke direkt über der Ostsee.' },
+      { name: 'Softeis (Eiscafé Tonegutti)', lat: 53.999665, lng: 10.773960, description: 'Eiscafé und eingeplanter Stopp für Softeis in Timmendorfer Strand.' },
+      { name: 'Adventure Golf Sierksdorf', lat: 54.072747, lng: 10.785677, description: 'Adventure-Golf-Anlage im Ferienpark Sierksdorf.' },
+      { name: "MEET'n move Bowling", lat: 54.072419, lng: 10.781661, description: 'Bowlingcenter in Sierksdorf und Schlechtwetter-Alternative.' },
+      { name: 'Ferienhaus / Unterkunft', lat: 53.99749298663205, lng: 10.76833728094691, description: 'Unterkunft für den Ostseeurlaub in Timmendorfer Strand.' },
+      { name: 'Alt-Travemünde (Vorderreihe)', lat: 53.9566035, lng: 10.8687975, description: 'Historische Häuserzeile Vorderreihe im Zentrum von Travemünde.' },
+      { name: 'Wochenmarkt Lübeck', lat: 53.86659, lng: 10.68491, description: 'Wochenmarkt auf dem Lübecker Markt in der Altstadt.' },
+      { name: 'Turm der St. Petri Kirche (Lübeck)', lat: 53.8659379, lng: 10.6829632, description: 'Aussichtsturm der St.-Petri-Kirche in der Lübecker Altstadt.' },
+      { name: 'Museum Holstentor (Lübeck)', lat: 53.8661407, lng: 10.6796886, description: 'Museum zur Lübecker Stadtgeschichte im historischen Holstentor.' },
+      { name: 'Boat-Now Lübeck', lat: 53.8636774, lng: 10.6805615, description: 'Bootsverleih für Touren auf den Lübecker Stadtgewässern.' },
     ];
-    const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));
+    const osmLink = (s) => `https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lng}#map=17/${s.lat}/${s.lng}`;
+    const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(
+      `<strong>${s.name}</strong><br><a href="${osmLink(s)}" target="_blank" rel="noopener noreferrer">Auf OpenStreetMap öffnen ↗</a>`,
+    ));
+    document.getElementById('places').innerHTML = spots.map((s) => `
+      <article class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 class="font-semibold text-slate-800">
+          <a href="${osmLink(s)}" target="_blank" rel="noopener noreferrer" class="hover:text-sky-700 underline decoration-slate-300 underline-offset-2">${s.name} ↗</a>
+        </h3>
+        <p class="text-sm text-slate-500 mt-1">${s.description}</p>
+      </article>
+    `).join('');
     if (markers.length) {
       const group = L.featureGroup(markers);
       map.fitBounds(group.getBounds().pad(0.3));
