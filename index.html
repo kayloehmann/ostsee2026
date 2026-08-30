@@ -95,6 +95,12 @@
       { name: 'Softeis (Eiscafé Tonegutti)', lat: 53.999665, lng: 10.773960 },
       { name: 'Adventure Golf Sierksdorf', lat: 54.072747, lng: 10.785677 },
       { name: "MEET'n move Bowling", lat: 54.072419, lng: 10.781661 },
+      { name: 'Ferienhaus / Unterkunft', lat: 53.99749298663205, lng: 10.76833728094691 },
+      { name: 'Alt-Travemünde (Vorderreihe)', lat: 53.9566035, lng: 10.8687975 },
+      { name: 'Wochenmarkt Lübeck', lat: 53.86659, lng: 10.68491 },
+      { name: 'Turm der St. Petri Kirche (Lübeck)', lat: 53.8659379, lng: 10.6829632 },
+      { name: 'Museum Holstentor (Lübeck)', lat: 53.8661407, lng: 10.6796886 },
+      { name: 'Boat-Now Lübeck', lat: 53.8636774, lng: 10.6805615 },
     ];
     const markers = spots.map((s) => L.marker([s.lat, s.lng]).addTo(map).bindPopup(s.name));
     if (markers.length) {
