@@ -1,9 +1,31 @@
 ---
+import "../styles/foundation.css";
 import "../styles/global.css";
-import type { Language } from "../data/site";
-interface Props { lang: Language; title: string; description: string; }
-const { lang, title, description } = Astro.props;
-const canonical = new URL(`/${lang}/`, Astro.site);
+
+interface Props {
+  lang: "de" | "en";
+  title: string;
+  description: string;
+  siteName?: string;
+  socialImage?: string;
+  socialImageAlt?: string;
+  themeColor?: string;
+  defaultLanguage?: "de" | "en";
+}
+
+const {
+  lang,
+  title,
+  description,
+  siteName = "Kay Löhmann",
+  socialImage = "/og-image.jpg",
+  socialImageAlt = title,
+  themeColor = "#f3f1eb",
+  defaultLanguage = "en",
+} = Astro.props;
+const canonicalUrl = new URL(`/${lang}/`, Astro.site);
+const socialImageUrl = new URL(socialImage, Astro.site);
+const locale = lang === "de" ? "de_DE" : "en_US";
 ---
 <!doctype html>
 <html lang={lang}>
@@ -11,21 +33,26 @@ const canonical = new URL(`/${lang}/`, Astro.site);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#e9f0ef" />
+    <meta name="theme-color" content={themeColor} />
     <meta name="author" content="Kay Löhmann" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={locale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL("/images/timmendorfer-strand.jpg", Astro.site)} />
-    <meta property="og:url" content={canonical} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:alt" content={socialImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="canonical" href={canonical} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+    <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" hreflang="de" href={new URL("/de/", Astro.site)} />
     <link rel="alternate" hreflang="en" href={new URL("/en/", Astro.site)} />
-    <link rel="alternate" hreflang="x-default" href={new URL("/de/", Astro.site)} />
+    <link rel="alternate" hreflang="x-default" href={new URL(`/${defaultLanguage}/`, Astro.site)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <slot name="head" />
     <title>{title}</title>
   </head>
   <body><slot /></body>
