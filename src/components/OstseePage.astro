@@ -1,0 +1,101 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "./SiteHeader.astro";
+import { copy, highlights, spots, type Language } from "../data/site";
+interface Props { lang: Language; }
+const { lang } = Astro.props;
+const t = copy[lang];
+const serializedSpots = JSON.stringify(spots.map((spot) => ({ ...spot, name: spot.name[lang], description: spot.description[lang] })));
+---
+<BaseLayout lang={lang} title={t.title} description={t.description}>
+  <SiteHeader lang={lang} labels={t} />
+  <main>
+    <section class="hero container" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">{t.eyebrow}</p>
+        <h1 id="page-title">Timmendorfer<br /><em>Strand.</em></h1>
+        <p class="hero-intro">{t.intro}</p>
+        <p class="byline">{t.byline}</p>
+      </div>
+      <figure class="hero-image">
+        <img src="/images/timmendorfer-strand.jpg" alt={lang === "de" ? "Strandkörbe am Timmendorfer Strand im Abendlicht" : "Beach chairs at Timmendorfer Strand in the evening light"} width="1600" height="900" fetchpriority="high" />
+        <figcaption>{lang === "de" ? "Timmendorfer Strand · eigene Aufnahme" : "Timmendorfer Strand · own photograph"}</figcaption>
+      </figure>
+      <div class="hero-note" aria-hidden="true"><span>54° N</span><span>10° E</span></div>
+    </section>
+
+    <section class="overview container" id="ueberblick" aria-labelledby="overview-title">
+      <div>
+        <p class="section-number">01 / {t.overview}</p>
+        <h2 id="overview-title">{t.plan}</h2>
+      </div>
+      <div class="overview-text">
+        <p>{t.planText}</p>
+        <dl>
+          <div><dt>{lang === "de" ? "Basis" : "Base"}</dt><dd>Timmendorfer Strand</dd></div>
+          <div><dt>{lang === "de" ? "Dauer" : "Length"}</dt><dd>{lang === "de" ? "8 Nächte" : "8 nights"}</dd></div>
+          <div><dt>{lang === "de" ? "Gemerkte Orte" : "Saved places"}</dt><dd>13</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="map-section" id="karte" aria-labelledby="map-title">
+      <div class="container map-heading">
+        <p class="section-number">02 / {t.map}</p>
+        <h2 id="map-title">{t.places}</h2>
+        <p>{t.mapHint}</p>
+      </div>
+      <div id="map" aria-label={t.map}></div>
+    </section>
+
+    <section class="places container" aria-labelledby="places-title">
+      <div class="places-heading">
+        <h2 id="places-title">{t.places}</h2>
+        <p>{t.placesIntro}</p>
+      </div>
+      <div class="place-list">
+        {spots.map((spot, index) => (
+          <article class="place">
+            <span class="place-index">{String(index + 1).padStart(2, "0")}</span>
+            <div><h3>{spot.name[lang]}</h3><p>{spot.description[lang]}</p></div>
+            <a href={`https://www.openstreetmap.org/?mlat=${spot.lat}&mlon=${spot.lng}#map=17/${spot.lat}/${spot.lng}`} target="_blank" rel="noopener noreferrer" aria-label={`${spot.name[lang]} – ${t.openMap}`}>↗</a>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="ideas" id="ideen" aria-labelledby="ideas-title">
+      <div class="container ideas-layout">
+        <div class="ideas-heading">
+          <p class="section-number">03 / {t.ideas}</p>
+          <h2 id="ideas-title">{lang === "de" ? "Worauf wir uns freuen." : "What we are looking forward to."}</h2>
+        </div>
+        <div class="highlight-list">
+          {highlights.map((item) => (
+            <article class="highlight">
+              <span>{item.number}</span>
+              <div><p>{item.kind[lang]}</p><h3>{item.title[lang]}</h3><div class="highlight-detail">{item.text[lang]}</div></div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="container footer-inner">
+      <p>© 2026 Kay Löhmann · {t.footer}</p>
+      <a href={`https://kayloehmann.de/${lang}/`}>← {t.home}</a>
+    </div>
+  </footer>
+  <script define:vars={{ serializedSpots, openMap: t.openMap }}>
+    const mapSpots = JSON.parse(serializedSpots);
+    const map = L.map("map", { scrollWheelZoom: false, zoomControl: false }).setView([54.118, 10.765], 8);
+    L.control.zoom({ position: "bottomright" }).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png", { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
+    const markers = mapSpots.map((spot) => {
+      const url = `https://www.openstreetmap.org/?mlat=${spot.lat}&mlon=${spot.lng}#map=17/${spot.lat}/${spot.lng}`;
+      return L.marker([spot.lat, spot.lng]).addTo(map).bindPopup(`<strong>${spot.name}</strong><p>${spot.description}</p><a href="${url}" target="_blank" rel="noopener noreferrer">${openMap} ↗</a>`);
+    });
+    map.fitBounds(L.featureGroup(markers).getBounds().pad(0.2));
+  </script>
+</BaseLayout>

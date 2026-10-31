@@ -1,0 +1,28 @@
+---
+import type { Language } from "../data/site";
+interface Props { lang: Language; labels: { overview: string; map: string; ideas: string; home: string; language: string }; }
+const { lang, labels } = Astro.props;
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="identity" href={`/${lang}/`} aria-label="Ostsee 2026">
+      <span class="mark" aria-hidden="true"><span></span><span></span></span>
+      <span>Ostsee 2026</span>
+    </a>
+    <nav aria-label={lang === "de" ? "Seitennavigation" : "Page navigation"}>
+      <a href="#ueberblick">{labels.overview}</a>
+      <a href="#karte">{labels.map}</a>
+      <a href="#ideen">{labels.ideas}</a>
+    </nav>
+    <div class="header-actions">
+      <a class="home-link" href={`https://kayloehmann.de/${lang}/`}>{labels.home}</a>
+      <label class="language">
+        <span class="sr-only">{labels.language}</span>
+        <select aria-label={labels.language} onchange="localStorage.setItem('kay-language', this.value.replaceAll('/', '')); location.href=this.value">
+          <option value="/de/" selected={lang === "de"}>DE</option>
+          <option value="/en/" selected={lang === "en"}>EN</option>
+        </select>
+      </label>
+    </div>
+  </div>
+</header>

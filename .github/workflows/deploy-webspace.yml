@@ -12,8 +12,22 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Astro-Seite bauen
+        run: |
+          npm ci
+          npm run build
+          npm audit --audit-level=high
 
       - name: SSH-Setup
         env:
@@ -31,16 +45,28 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
         run: |
-          ssh -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DEPLOY_PATH"
+          set -euo pipefail
+          expected=/home/web/ostsee2026/
+          if [ "$DEPLOY_PATH" != "$expected" ]; then
+            echo "::error::DEPLOY_PATH muss exakt $expected sein."
+            exit 1
+          fi
+          ssh -i ~/.ssh/id_ed25519 "$DEPLOY_USER@$DEPLOY_HOST" bash -s -- "${{ github.sha }}" <<'BASH'
+          set -euo pipefail
+          target=/home/web/ostsee2026
+          backup_dir="$HOME/.deploy-backups"
+          backup="$backup_dir/ostsee2026-pre-$1.tar.gz"
+          mkdir -p "$backup_dir" "$target"
+          if [ ! -e "$backup" ]; then
+            tar -C "$target" -czf "$backup" .
+            chmod 600 "$backup"
+          fi
+          test -s "$backup"
+          echo "Pre-Deploy-Backup: $backup"
+          BASH
           rsync -avz --delete \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            --exclude 'CNAME' \
-            --exclude 'README.md' \
-            --exclude '.gitignore' \
-            --exclude '.DS_Store' \
             --rsh "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
-            ./ \
+            dist/ \
             "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH"
 
       - name: Eltern-.htaccess für Subdomain-Mapping
@@ -84,7 +110,15 @@ jobs:
         env:
           DEPLOY_URL: ${{ vars.DEPLOY_URL }}
         run: |
+          set -euo pipefail
           sleep 2
-          code=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOY_URL/")
-          echo "Live-URL: $DEPLOY_URL → HTTP $code"
-          [ "$code" = "200" ] && echo "✅ OK" || echo "::warning::Live-URL antwortet mit $code, nicht 200"
+          de_body=$(mktemp)
+          en_body=$(mktemp)
+          trap 'rm -f "$de_body" "$en_body"' EXIT
+          curl --fail --silent --show-error "$DEPLOY_URL/de/" -o "$de_body"
+          curl --fail --silent --show-error "$DEPLOY_URL/en/" -o "$en_body"
+          grep -Fq '<title>Ostsee 2026 — Timmendorfer Strand</title>' "$de_body"
+          grep -Fq '<title>Baltic Sea 2026 — Timmendorfer Strand</title>' "$en_body"
+          grep -Fq 'Störtebeker Festspiele' "$de_body"
+          curl --fail --silent --show-error "$DEPLOY_URL/images/timmendorfer-strand.jpg" -o /dev/null
+          echo "Bilinguale Ostsee-Seite, Karte und Reiseziele sind live."
