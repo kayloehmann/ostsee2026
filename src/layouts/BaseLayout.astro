@@ -20,7 +20,7 @@ const {
   siteName = "Kay Löhmann",
   socialImage = "/og-image.jpg",
   socialImageAlt = title,
-  themeColor = "#f3f1eb",
+  themeColor = "#ffffff",
   defaultLanguage = "en",
 } = Astro.props;
 const canonicalUrl = new URL(`/${lang}/`, Astro.site);
@@ -52,7 +52,6 @@ const locale = lang === "de" ? "de_DE" : "en_US";
     <link rel="alternate" hreflang="en" href={new URL("/en/", Astro.site)} />
     <link rel="alternate" hreflang="x-default" href={new URL(`/${defaultLanguage}/`, Astro.site)} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <slot name="head" />
     <title>{title}</title>
   </head>
   <body><slot /></body>
