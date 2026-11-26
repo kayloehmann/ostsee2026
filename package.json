@@ -11,7 +11,7 @@
     "format:check": "biome format ."
   },
   "dependencies": {
-    "astro": "^7.4.4"
+    "astro": "^7.4.13"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.9"
